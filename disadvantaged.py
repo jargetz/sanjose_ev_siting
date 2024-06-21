@@ -10,7 +10,7 @@ import numpy as np
 # Define the paths
 combined_csv_path = 'out/combined_data.csv'
 traffic_data_path = './data/Average_Daily_Traffic.csv'
-output_map_path = 'out/combined_data_map_with_traffic.html'
+output_map_path = 'out/pages/combined_data_map_with_traffic.html'
 statistics_output_path = 'out/statistics.csv'
 outliers_output_path = 'out/outliers.csv'
 icon_path = './electric-vehicle-charging-station-icon.png'
@@ -44,8 +44,8 @@ traffic_gdf.set_crs(epsg=4326, inplace=True)
 mean_adt = traffic_gdf['ADT'].mean()
 std_adt = traffic_gdf['ADT'].std()
 
-# Filter traffic data points to only include those outside the first standard deviation
-filtered_traffic_gdf = traffic_gdf[(traffic_gdf['ADT'] < mean_adt - std_adt) | (traffic_gdf['ADT'] > mean_adt + std_adt)]
+# Filter traffic data points to only include those greater than the mean plus one standard deviation
+filtered_traffic_gdf = traffic_gdf[traffic_gdf['ADT'] > mean_adt + std_adt]
 
 # Spatial join to assign traffic data points to census tracts
 joined_gdf = gpd.sjoin(filtered_traffic_gdf, combined_gdf, how='left', op='within')
@@ -67,8 +67,7 @@ statistics.to_csv(statistics_output_path, index=False)
 
 # Identify outliers in both ADT and diesel particulate matter exposure
 outliers_gdf = combined_gdf[
-    ((combined_gdf['Diesel particulate matter exposure'] < mean_exposure - std_exposure) | 
-     (combined_gdf['Diesel particulate matter exposure'] > mean_exposure + std_exposure)) & 
+    (combined_gdf['Diesel particulate matter exposure'] > mean_exposure + std_exposure) & 
     (combined_gdf['GEOID10'].isin(joined_gdf['GEOID10']))
 ]
 
@@ -82,7 +81,7 @@ m = folium.Map(location=[37.3382, -121.8863], zoom_start=12)
 def style_function(feature):
     props = feature['properties']
     exposure = props.get('Diesel particulate matter exposure', 0)
-    if (exposure < mean_exposure - std_exposure or exposure > mean_exposure + std_exposure) and props.get('Identified as disadvantaged', False):
+    if (exposure > mean_exposure + std_exposure) and props.get('Identified as disadvantaged', False):
         return {
             'fillColor': 'red',
             'color': 'black',
