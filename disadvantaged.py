@@ -11,6 +11,7 @@ import numpy as np
 combined_csv_path = 'out/combined_data.csv'
 traffic_data_path = './data/Average_Daily_Traffic.csv'
 output_map_path = 'out/pages/combined_data_map_with_traffic.html'
+output_map_path_index = './index.html'
 statistics_output_path = 'out/statistics.csv'
 outliers_output_path = 'out/outliers.csv'
 icon_path = './electric-vehicle-charging-station-icon.png'
@@ -71,8 +72,8 @@ outliers_gdf = combined_gdf[
     (combined_gdf['GEOID10'].isin(joined_gdf['GEOID10']))
 ]
 
-# Save the outliers to CSV
-outliers_gdf.to_csv(outliers_output_path, index=False)
+# Save the outliers to CSV with specified columns only
+outliers_gdf[['GEOID10', 'SF', 'CF', 'Diesel particulate matter exposure']].to_csv(outliers_output_path, index=False)
 
 # Create a base map centered on San Jose
 m = folium.Map(location=[37.3382, -121.8863], zoom_start=12)
@@ -108,7 +109,7 @@ def outlier_style_function(feature):
     return {
         'fillColor': 'red',
         'color': 'darkblue',
-        'weight': 4,  # 4px thick dark blue border
+        'weight': 1,  # 1px thick dark blue border
         'fillOpacity': 0.2,  # 80% transparent red
     }
 
@@ -186,6 +187,7 @@ for idx, row in filtered_traffic_gdf.iterrows():
 
 # Save the map to an HTML file
 m.save(output_map_path)
+m.save(output_map_path_index)
 
 print(f"Map saved to {output_map_path}")
 print(f"Statistics saved to {statistics_output_path}")
