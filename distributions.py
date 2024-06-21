@@ -12,10 +12,16 @@ traffic_data = pd.read_csv(traffic_data_path)
 fig, axes = plt.subplots(2, 1, figsize=(12, 8))
 
 # Plot for Diesel particulate matter exposure
-axes[0].hist(combined_data['Diesel particulate matter exposure'].dropna(), bins=50, color='purple', alpha=0.7)
+n, bins, patches = axes[0].hist(combined_data['Diesel particulate matter exposure'].dropna(), bins=50, color='purple', alpha=0.7)
 axes[0].set_title('Distribution of Diesel Particulate Matter Exposure')
 axes[0].set_xlabel('Diesel Particulate Matter Exposure')
 axes[0].set_ylabel('Frequency')
+
+# Customize the y-axis ticks for Diesel Particulate Matter Exposure plot
+max_frequency_diesel = max(n)
+step_size_diesel = 3  # Set step size for Diesel Particulate Matter Exposure plot
+yticks_diesel = [i for i in range(0, int(max_frequency_diesel) + 1, step_size_diesel)]
+axes[0].set_yticks(yticks_diesel)
 
 # Plot for ADT
 axes[1].hist(traffic_data['ADT'].dropna(), bins=50, color='blue', alpha=0.7)
